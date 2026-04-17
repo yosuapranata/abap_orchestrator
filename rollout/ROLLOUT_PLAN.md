@@ -270,7 +270,7 @@ After each stage completes, you will find the following files:
 project/<ticket-id>/
 ├── input/
 │   └── fs_original.md          ← you provide this before Stage 1
-├── src/                        ← local ABAP source copies (populated by dev-agent)
+├── src/                        ← local ABAP source copies (downloaded by all three agents; Stage 1 is the primary populator)
 │
 ├── 01_fs_questions.md          ← Stage 1: clarification questions for the requester
 ├── 01_locked_objects.md        ← Stage 1: list of locked objects with TR and owner
