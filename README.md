@@ -55,7 +55,15 @@ abap_orchestrator/
 
 ## Prerequisites
 
-1. **vibing-steampunk MCP binary** — download from [github.com/oisee/vibing-steampunk/releases/latest](https://github.com/oisee/vibing-steampunk/releases/latest) and place at `C:/Users/<YOUR_USERNAME>/.local/bin/`:
+1. **Claude Code** CLI installed and authenticated against the company LiteLLM endpoint. See the setup guide for your platform:
+
+   | Platform | Setup Guide |
+   |---|---|
+   | Mac | [LiteLLM with Claude Code — Setup Guide for Mac](https://atlassian.cloud.deliveryhero.group/wiki/spaces/FINDEVC/pages/1266581586/Lite+LLM+with+Claude+Code+-+Setup+Guide+for+Mac) |
+   | Windows — with Cloudflare | [LiteLLM with Claude Code — Setup Guide for Windows](https://atlassian.cloud.deliveryhero.group/wiki/spaces/FINDEVC/pages/1260716053/Lite+LLM+with+Claude+Code+-+Setup+Guide+for+Windows) |
+   | Windows — without Cloudflare (WSL) | Guide not yet published — see [ROLLOUT_PLAN.md](rollout/ROLLOUT_PLAN.md) |
+
+2. **vibing-steampunk MCP binary** — download from [github.com/oisee/vibing-steampunk/releases/latest](https://github.com/oisee/vibing-steampunk/releases/latest) and place at `C:/Users/<YOUR_USERNAME>/.local/bin/`:
 
    | Platform | File to download | Rename to |
    |---|---|---|
@@ -64,13 +72,11 @@ abap_orchestrator/
 
    Update the path in `.mcp.json` if your username differs from the default.
 
-2. **SAP credentials** — copy `.env.template` to `.env` and fill in your credentials:
+3. **SAP credentials** — copy `.env.template` to `.env` and fill in your credentials:
    ```bash
    cp .env.template .env
    ```
    Then edit `.env` with your `SAP_URL`, `SAP_USER`, `SAP_CLIENT`, and `SAP_PASSWORD`. Never commit `.env`.
-
-3. **Claude Code** CLI installed and authenticated against the company LiteLLM endpoint.
 
 ---
 
@@ -163,9 +169,9 @@ All agents run on `claude-sonnet-4-6`.
 
 | Agent | File | Stage | SAP Access |
 |-------|------|-------|------------|
-| fs-review-agent | `.claude/agents/fs-review.md` | 1 — FS Review | Read-only (DD1, DQ1) |
-| ts-agent | `.claude/agents/ts-spec.md` | 2 — Technical Spec | Read-only (DD1, DQ1) |
-| dev-agent | `.claude/agents/dev.md` | 3 — Development | Read (DD1), Write (DS1/DX1/DD3) |
+| fs-review-agent | `.claude/agents/fs-review.md` | 1 — FS Review | Read-only (source system configured in `.mcp.json`) |
+| ts-agent | `.claude/agents/ts-spec.md` | 2 — Technical Spec | Read-only (source system configured in `.mcp.json`) |
+| dev-agent | `.claude/agents/dev.md` | 3 — Development | Read (source system in `.mcp.json`), Write (developer-selected at runtime; DQ1 and DP1 prohibited) |
 
 ---
 
@@ -173,10 +179,10 @@ All agents run on `claude-sonnet-4-6`.
 
 | System | Access | Notes |
 |--------|--------|-------|
-| DD1 (Development) | Read-only | Writes require explicit per-object approval |
+| DD1 (Development) | Read-only | Source read system for all agents; no agent-initiated writes |
 | DQ1 (Quality) | Read-only | No writes under any circumstance |
 | DP1 (Production) | No access | Absolutely prohibited |
-| DS1 / DX1 / DD3 (Sandbox) | Read + Write | Default write target for dev-agent |
+| DS1 / DX1 / DD3 (Sandbox) | Read + Write | Typical write targets for dev-agent; writes require explicit per-object approval |
 
 Enforced via `config/access_policy.json` and hardcoded in each agent's system prompt.
 
