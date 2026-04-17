@@ -129,36 +129,11 @@ Or pull the latest version if you already have it:
 git pull
 ```
 
-### 3.2 Configure SAP Connections
+### 3.2 SAP Connections Reference
 
-Copy the template and fill in your hostnames:
+`config/sap_connections.json` is a **documentation-only** reference file that describes the logical connection roles used by the agents (which systems each role can access and whether it operates in read or write mode). **You do not need to edit this file.**
 
-```bash
-cp config/sap_connections.json.template config/sap_connections.json
-```
-
-Open `config/sap_connections.json` and replace each `<HOSTNAME>` placeholder with the actual RFC hostname for your landscape. This file is gitignored — do not commit it.
-
-```json
-{
-  "ZLLM_READ": {
-    "ashost": "<DD1_HOSTNAME>",
-    "sysnr":   "00",
-    "client":  "100",
-    "user":    "ZLLM_READ",
-    "passwd":  "${ZLLM_READ_PASSWORD}"
-  },
-  "ZLLM_WRITE": {
-    "ashost": "<DS1_HOSTNAME>",
-    "sysnr":   "00",
-    "client":  "100",
-    "user":    "ZLLM_WRITE",
-    "passwd":  "${ZLLM_WRITE_PASSWORD}"
-  }
-}
-```
-
-> Note: `${ZLLM_READ_PASSWORD}` is resolved at runtime from the environment variable — do not replace this with the actual password.
+All actual credentials are configured via `.env` — see [Section 2.3](#23-environment-variables) and [Section 3.4](#34-set-environment-variables).
 
 ### 3.3 Configure `.mcp.json`
 
