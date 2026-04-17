@@ -17,14 +17,15 @@ AI-augmented ABAP development lifecycle using Claude Code agents and vibing-stea
 
 ```
 abap_orchestrator/
-├── .env                                ← environment variables (passwords — never commit)
-├── .gitignore                          ← excludes sap_connections.json and .env
+├── .env                                ← your SAP credentials (gitignored — never commit)
+├── .env.template                       ← credential template with placeholders (tracked in git)
+├── .gitignore                          ← excludes .env; tracks .env.template
 ├── .mcp.json                           ← MCP server configuration (vibing-steampunk)
 ├── .claude/
 │   ├── agents/
-│   │   ├── fs-review.md               ← Stage 1: FS reviewer (read-only, claude-opus-4-6)
-│   │   ├── ts-spec.md                 ← Stage 2: technical spec producer (read-only, claude-opus-4-6)
-│   │   └── dev.md                     ← Stage 3: code writer with approval gate (claude-opus-4-6)
+│   │   ├── fs-review.md               ← Stage 1: FS reviewer (read-only, claude-sonnet-4-6)
+│   │   ├── ts-spec.md                 ← Stage 2: technical spec producer (read-only, claude-sonnet-4-6)
+│   │   └── dev.md                     ← Stage 3: code writer with approval gate (claude-sonnet-4-6)
 │   ├── commands/
 │   │   ├── abap-orchestrator.md       ← /abap-orchestrator full pipeline command
 │   │   ├── fs-review.md               ← /fs-review run Stage 1 only
@@ -34,7 +35,7 @@ abap_orchestrator/
 │   │   └── abap-orchestrator.md       ← orchestrator logic (commands delegate here)
 │   └── settings.json                  ← Claude Code permission settings
 ├── config/
-│   ├── sap_connections.json           ← RFC credentials (gitignored — fill in before use)
+│   ├── sap_connections.json           ← documentation only (not used at runtime)
 │   └── access_policy.json             ← which agent can access which system/operation
 └── project/                           ← runtime output: one subfolder per ticket
     └── <ticket-id>/                   ← e.g. CR-12345 (see project/CR-12345/ for sample)
@@ -54,19 +55,22 @@ abap_orchestrator/
 
 ## Prerequisites
 
-1. **vibing-steampunk MCP server** — install the `vsp.exe` binary and configure `.mcp.json` to point to it. The MCP server must be running before launching Claude Code.
+1. **vibing-steampunk MCP binary** — download from [github.com/oisee/vibing-steampunk/releases/latest](https://github.com/oisee/vibing-steampunk/releases/latest) and place at `C:/Users/<YOUR_USERNAME>/.local/bin/`:
 
-2. **SAP RFC credentials** — fill in `config/sap_connections.json`:
-   - Replace `<DD1_HOSTNAME>` with your DD1 system hostname.
-   - Replace `<DS1_HOSTNAME>` with your sandbox system hostname.
+   | Platform | File to download | Rename to |
+   |---|---|---|
+   | Windows | `vsp-windows-amd64.exe` | `vsp.exe` |
+   | Mac (Apple Silicon) | `vsp-darwin-arm64` | `vsp` |
 
-3. **Environment variables** — set passwords before starting Claude Code, or add them to `.env`:
+   Update the path in `.mcp.json` if your username differs from the default.
+
+2. **SAP credentials** — copy `.env.template` to `.env` and fill in your credentials:
    ```bash
-   export ZLLM_READ_PASSWORD="<read-only RFC user password>"
-   export ZLLM_WRITE_PASSWORD="<write-enabled RFC user password>"
+   cp .env.template .env
    ```
+   Then edit `.env` with your `SAP_URL`, `SAP_USER`, `SAP_CLIENT`, and `SAP_PASSWORD`. Never commit `.env`.
 
-4. **Claude Code** CLI installed and authenticated.
+3. **Claude Code** CLI installed and authenticated against the company LiteLLM endpoint.
 
 ---
 
@@ -155,7 +159,7 @@ All commands are invoked from the Claude Code chat prompt.
 
 ## Agents
 
-All agents run on `claude-opus-4-6`.
+All agents run on `claude-sonnet-4-6`.
 
 | Agent | File | Stage | SAP Access |
 |-------|------|-------|------------|
@@ -191,9 +195,8 @@ Enforced via `config/access_policy.json` and hardcoded in each agent's system pr
 
 ## Security Notes
 
-- `config/sap_connections.json` is gitignored. Never commit it.
-- `.env` is gitignored. Never commit it.
-- Passwords are read from environment variables (`${ZLLM_READ_PASSWORD}`, `${ZLLM_WRITE_PASSWORD}`), not stored inline.
+- `.env` is gitignored — never commit it. Use `.env.template` as the starting point.
+- SAP credentials (`SAP_URL`, `SAP_USER`, `SAP_CLIENT`, `SAP_PASSWORD`) are read from `.env` at runtime.
 - The dev-agent will refuse to write to DQ1 or DP1 even if instructed to do so.
 - Every write is logged with timestamp, approver name, target system, and TR number in `03_change_log.md`.
 
