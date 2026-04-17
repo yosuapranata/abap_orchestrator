@@ -1,0 +1,33 @@
+{
+  "source_system_config": "Derived at runtime from the `-s` argument in `.mcp.json`. The orchestrator reads this value at Step 0 and passes it to all subagents as <source_system>. Do not hardcode system IDs in agent prompts.",
+  "agents": {
+    "fs-review-agent": {
+      "allowed_connections": ["ZLLM_READ"],
+      "allowed_systems": ["<source_system> from .mcp.json"],
+      "allowed_operations": ["read"],
+      "prohibited_operations": ["write", "activate", "create", "delete"]
+    },
+    "ts-agent": {
+      "allowed_connections": ["ZLLM_READ"],
+      "allowed_systems": ["<source_system> from .mcp.json"],
+      "allowed_operations": ["read"],
+      "prohibited_operations": ["write", "activate", "create", "delete"]
+    },
+    "dev-agent": {
+      "allowed_connections": ["ZLLM_READ", "ZLLM_WRITE"],
+      "allowed_systems": {
+        "read": ["<source_system> from .mcp.json"],
+        "write": ["<target_system> selected by developer at Stage 3 runtime"]
+      },
+      "prohibited_systems": ["DQ1", "DP1"],
+      "prohibited_operations_on_prohibited_systems": ["read", "write", "activate", "create", "delete"]
+    }
+  },
+  "policy_notes": [
+    "ZLLM_WRITE must never be configured to connect to DQ1 or DP1.",
+    "Any write by dev-agent requires explicit per-object developer approval typed in the CLI.",
+    "All write operations require the object to be assigned to a Transport Request before proceeding.",
+    "Approval log must be written to ./project/<ticket>/03_change_log.md before the write is executed.",
+    "The source system for reads is always derived from .mcp.json `-s` argument — never hardcoded."
+  ]
+}

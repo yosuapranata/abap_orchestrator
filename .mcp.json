@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "vibing_steampunk": {
+      "command": "C:/Users/YosuaPranata/.local/bin/vsp.exe",
+      "args": ["-s", "DD3", "--enable-transports", "--allow-transportable-edits"]
+    }
+  }
+}

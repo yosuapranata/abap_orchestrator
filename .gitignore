@@ -1,0 +1,12 @@
+# SAP connection credentials and local settings — NEVER commit these files
+config/sap_connections.json
+.claude/settings.local.json
+
+# Environment files
+.env
+.env.*
+!.env.template
+
+# OS artifacts
+.DS_Store
+Thumbs.db

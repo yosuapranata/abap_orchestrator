@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"C:/Users/YosuaPranata/.local/bin/vsp.exe\" --help)",
+      "Bash(\"C:/Users/YosuaPranata/.local/bin/vsp.exe\" -h)",
+      "mcp__vibing_steampunk__GetConnectionInfo",
+      "mcp__vibing_steampunk__GetSystemInfo",
+      "mcp__vibing_steampunk__GetSource",
+      "mcp__vibing_steampunk__GetTableContents",
+      "mcp__vibing_steampunk__GetTransport",
+      "Bash(\"C:/Users/YosuaPranata/.local/bin/vsp.exe\" config *)",
+      "mcp__vibing_steampunk__EditSource",
+      "mcp__vibing_steampunk__WriteSource",
+      "mcp__vibing_steampunk__ImportFromFile",
+      "mcp__vibing_steampunk__SearchObject",
+      "mcp__vibing_steampunk__GetClassInfo",
+      "mcp__vibing_steampunk__GetObjectStructure",
+      "mcp__vibing_steampunk__GetInactiveObjects",
+      "mcp__vibing_steampunk__GetTable",
+      "mcp__vibing_steampunk__GetPackage",
+      "mcp__vibing_steampunk__SyntaxCheck",
+      "mcp__vibing_steampunk__LockObject",
+      "mcp__vibing_steampunk__UnlockObject",
+      "mcp__vibing_steampunk__Activate",
+      "mcp__vibing_steampunk__ListTransports",
+      "mcp__vibing_steampunk__SetTextElements",
+      "mcp__vibing_steampunk__RunATCCheck",
+      "mcp__vibing_steampunk__RunUnitTests",
+      "mcp__vibing_steampunk__GetContext"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "vibing_steampunk"
+  ]
+}
