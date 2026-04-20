@@ -65,55 +65,28 @@
 
 ---
 
-### Phase 5: Pilot Retrospective & Fixes — `May 12–16` · Status: Not Started
+### Phase 5: Pilot Retrospective & Fixes — `May 12–23` · Status: Not Started
 
-**Goal:** Review pilot outcomes, fix issues, finalize the tool for wider rollout.
+**Goal:** Review pilot outcomes, fix issues, and finalize the tool and training materials before full-team rollout.
 
 - [ ] Run retrospective session with pilot participants
 - [ ] Prioritize and fix issues found during pilot
 - [ ] Update agent definitions/skills based on real-world learnings
 - [ ] Update documentation ([ROLLOUT_PLAN.md](ROLLOUT_PLAN.md), [CLAUDE.md](../CLAUDE.md)) with lessons learned
-- [ ] Finalize Wave 1 onboarding checklist
+- [ ] Prepare training materials and onboarding checklist for full-team rollout
 
-**Success criteria:** No critical issues outstanding, onboarding process validated.
-
----
-
-### Phase 6: Wave 1 Rollout — `May 19–23` · Status: Not Started
-
-**Goal:** Onboard ~5 developers with buddy support from pilot veterans.
-
-- [ ] Select Wave 1 participants (mix of functional areas)
-- [ ] Pair each Wave 1 dev with a pilot veteran as buddy
-- [ ] Walk through setup using [ROLLOUT_PLAN.md](ROLLOUT_PLAN.md)
-- [ ] Each Wave 1 dev runs at least one CR with buddy support
-- [ ] Collect feedback and address issues in real-time
-
-**Success criteria:** All Wave 1 devs have completed setup and run at least one CR.
+**Success criteria:** No critical issues outstanding, training materials ready, full team rollout unblocked.
 
 ---
 
-### Phase 7: Wave 1 Stabilization — `May 23–26` · Status: Not Started
+### Phase 6: Full Team Training & Rollout — `May 26–30` · Status: Not Started
 
-**Goal:** Monitor Wave 1, troubleshoot, gather early feedback before scaling.
+**Goal:** Onboard the entire development team in a single rollout wave.
 
-- [ ] Monitor for recurring issues or support requests
-- [ ] Fix any issues surfaced by Wave 1
-- [ ] Prepare training materials for Wave 2 (based on common questions from Wave 1)
-- [ ] Update docs with any new FAQ or troubleshooting steps
-
-**Success criteria:** Wave 1 devs operating independently, training materials ready.
-
----
-
-### Phase 8: Wave 2 Training & Rollout — `May 27–30` · Status: Not Started
-
-**Goal:** Train and onboard remaining developers, achieving full team adoption.
-
-- [ ] Run hands-on training session for Wave 2 participants
+- [ ] Run hands-on training session for all team members
 - [ ] Walk through setup using [ROLLOUT_PLAN.md](ROLLOUT_PLAN.md)
 - [ ] Distribute training materials and reference docs
-- [ ] Each Wave 2 dev completes setup and runs first CR (with support available)
+- [ ] Each developer completes setup and runs their first CR (with support available)
 - [ ] Announce full availability and support channels
 
 **Success criteria:** All team members onboarded, tool available for all new CRs.

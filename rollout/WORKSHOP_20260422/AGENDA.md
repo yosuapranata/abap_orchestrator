@@ -24,11 +24,13 @@
 
 ## 1. Why This Initiative
 
-**Goal:** Set context before the demo; build buy-in before people see the tool.
+**Goal:** Set context before the demo; align the team on what this workshop is trying to achieve.
 
-- The problem: how much time does a CR cycle currently take? (FS review, spec writing, coding, ATC, review)
-- Where AI agents help: Stages 1–3 are repetitive pattern-matching and code generation tasks
-- What stays manual: ATC checks, test execution, code review, TR release — developer judgment is always the last gate
+- We already have an AI tool in place (LiteLLM with Claude Code) and it is being used today
+- **Objective 1:** We need a streamlined, consistent way of working for the whole development team that incorporates the AI tool — not just individual usage
+- **Objective 2:** Once the new ways of working are rolled out, we need a way to measure the efficiency gain across the team
+
+This workshop is the first step toward both: agreeing on a shared workflow and identifying how to track its impact.
 
 ---
 
