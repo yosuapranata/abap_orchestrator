@@ -15,7 +15,7 @@
 | ID | Title | Area | Impact | Status | Owner |
 |---|---|---|---|---|---|
 | [OP-06](#op-06--api-cost-per-ticket) | API Cost per Ticket | Finance | Financial | Resolved | Yosua |
-| [OP-08](#op-08--windows-wsl-setup-guide-not-yet-published) | Windows WSL Setup Guide Not Yet Published | Documentation | High (blocker for WSL users) | Open | — |
+| [OP-08](#op-08--windows-wsl-setup-guide-not-yet-published) | Windows WSL Setup Guide | Documentation | High (blocker for WSL users) | Resolved | Berna & Efim |
 
 **Status values:** `Open` · `In Progress` · `Decided` · `Resolved` · `Won't Fix`
 
@@ -50,8 +50,8 @@ All three agents (`fs-review-agent`, `ts-agent`, `dev-agent`) moved from `claude
 **← Full context:** [ROLLOUT_PLAN.md §2.1](ROLLOUT_PLAN.md#21-claude-code-via-litelm) · [ROLLOUT_PLAN.md §1 (Who This Guide Is For)](ROLLOUT_PLAN.md#who-this-guide-is-for)  
 **Area:** Documentation  
 **Impact:** High — blocks all Windows developers who are not on Cloudflare  
-**Status:** Open  
-**Owner:** —  
+**Status:** Resolved  
+**Owner:** Berna & Efim  
 **Last updated:** April 2026
 
 ### Description
@@ -83,7 +83,7 @@ The guide should cover at minimum:
 
 ### Decision / Resolution
 
-> *(to be filled in — assign author and target publish date)*
+WSL setup instructions were added to the existing [Windows setup guide](https://atlassian.cloud.deliveryhero.group/wiki/spaces/FINDEVC/pages/1260716053/Lite+LLM+with+Claude+Code+-+Setup+Guide+for+Windows). A separate guide was not needed — the existing page now covers both Cloudflare and WSL paths. References in ROLLOUT_PLAN.md, README.md, and ROADMAP.md updated to point to the live page.
 
 ---
 

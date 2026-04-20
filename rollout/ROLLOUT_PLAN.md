@@ -52,8 +52,7 @@ The **ABAP Orchestrator** accelerates the ABAP development lifecycle by delegati
 Developers already using **Claude Code via LiteLLM** on this team. If you have not set up Claude Code yet, complete the setup guide for your platform first:
 
 > - [Claude Code Setup Guide — Mac](https://atlassian.cloud.deliveryhero.group/wiki/spaces/FINDEVC/pages/1266581586/Lite+LLM+with+Claude+Code+-+Setup+Guide+for+Mac)
-> - [Claude Code Setup Guide — Windows (with Cloudflare)](https://atlassian.cloud.deliveryhero.group/wiki/spaces/FINDEVC/pages/1260716053/Lite+LLM+with+Claude+Code+-+Setup+Guide+for+Windows)
-> - Claude Code Setup Guide — Windows without Cloudflare (using WSL) — *guide not yet published, see [OP-08](OPEN_POINTS.md#op-08--windows-wsl-setup-guide-not-yet-published)*
+> - [Claude Code Setup Guide — Windows](https://atlassian.cloud.deliveryhero.group/wiki/spaces/FINDEVC/pages/1260716053/Lite+LLM+with+Claude+Code+-+Setup+Guide+for+Windows)
 
 ---
 
@@ -71,8 +70,7 @@ All four prerequisites must be in place before running the orchestrator.
 | Platform | Guide |
 |---|---|
 | Mac | [LiteLLM with Claude Code — Setup Guide for Mac](https://atlassian.cloud.deliveryhero.group/wiki/spaces/FINDEVC/pages/1266581586/Lite+LLM+with+Claude+Code+-+Setup+Guide+for+Mac) |
-| Windows — with Cloudflare | [LiteLLM with Claude Code — Setup Guide for Windows](https://atlassian.cloud.deliveryhero.group/wiki/spaces/FINDEVC/pages/1260716053/Lite+LLM+with+Claude+Code+-+Setup+Guide+for+Windows) |
-| Windows — without Cloudflare (WSL) | *Guide not yet published — see [OP-08](OPEN_POINTS.md#op-08--windows-wsl-setup-guide-not-yet-published)* |
+| Windows | [LiteLLM with Claude Code — Setup Guide for Windows](https://atlassian.cloud.deliveryhero.group/wiki/spaces/FINDEVC/pages/1260716053/Lite+LLM+with+Claude+Code+-+Setup+Guide+for+Windows) |
 
 ### 2.2 vibing-steampunk MCP Binary
 

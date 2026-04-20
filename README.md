@@ -60,8 +60,7 @@ abap_orchestrator/
    | Platform | Setup Guide |
    |---|---|
    | Mac | [LiteLLM with Claude Code — Setup Guide for Mac](https://atlassian.cloud.deliveryhero.group/wiki/spaces/FINDEVC/pages/1266581586/Lite+LLM+with+Claude+Code+-+Setup+Guide+for+Mac) |
-   | Windows — with Cloudflare | [LiteLLM with Claude Code — Setup Guide for Windows](https://atlassian.cloud.deliveryhero.group/wiki/spaces/FINDEVC/pages/1260716053/Lite+LLM+with+Claude+Code+-+Setup+Guide+for+Windows) |
-   | Windows — without Cloudflare (WSL) | Guide not yet published — see [ROLLOUT_PLAN.md](rollout/ROLLOUT_PLAN.md) |
+   | Windows | [LiteLLM with Claude Code — Setup Guide for Windows](https://atlassian.cloud.deliveryhero.group/wiki/spaces/FINDEVC/pages/1260716053/Lite+LLM+with+Claude+Code+-+Setup+Guide+for+Windows) |
 
 2. **vibing-steampunk MCP binary** — download from [github.com/oisee/vibing-steampunk/releases/latest](https://github.com/oisee/vibing-steampunk/releases/latest) and place at `C:/Users/<YOUR_USERNAME>/.local/bin/`:
 
@@ -77,6 +76,20 @@ abap_orchestrator/
    cp .env.template .env
    ```
    Then edit `.env` with your `SAP_URL`, `SAP_USER`, `SAP_CLIENT`, and `SAP_PASSWORD`. Never commit `.env`.
+
+4. **`.mcp.json` — source system and binary path** — open `.mcp.json` at the project root and verify two values:
+
+   ```json
+   "command": "C:/Users/<YOUR_USERNAME>/.local/bin/vsp.exe",
+   "args": ["-s", "DD3", "--enable-transports", "--allow-transportable-edits"]
+   ```
+
+   | Field | What to change |
+   |---|---|
+   | `command` | Update `<YOUR_USERNAME>` if it differs from the default |
+   | `-s` | Set to the SAP system ID you want agents to **read from** (e.g. `DD1`, `DS1`, `DD3`) |
+
+   Restart Claude Code after any change to `.mcp.json`. The write target system is selected interactively at Stage 3 — no config change needed for that.
 
 ---
 
