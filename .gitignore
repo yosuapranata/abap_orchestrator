@@ -10,3 +10,11 @@ config/sap_connections.json
 # OS artifacts
 .DS_Store
 Thumbs.db
+
+# Ignore all project and incident work folders; only keep scaffolds and examples
+project/*
+!project/CR-12345/
+!project/S131-6000018866/
+incident/*
+!incident/README.md
+!incident/INC-2026-0421-001/
