@@ -34,6 +34,14 @@ APPROVE <OBJECT_NAME> to <SYSTEM_ID>
 /dev       <ticket-id>                                               # Stage 3 (needs Stage 1+2 output)
 ```
 
+### Incident analysis (pre-pipeline)
+
+```
+/incident <incident-no>                                              # Stage 0 — read-only RCA
+```
+
+Read-only root-cause analysis from short dumps (ST22) and SQL/runtime traces (ST05/SAT). The agent pulls dumps and traces directly from the source system via VSP; for incidents on systems VSP cannot reach (DQ1/DP1), upload the exported dump/trace to `incident/<incident-no>/input/` first. Output is a 5-file analysis package whose final artifact (`05_fix_recommendation.md`) is structured for handoff to `/fs-review` or `/ts-spec`.
+
 ---
 
 ## Prerequisites
@@ -57,9 +65,11 @@ APPROVE <OBJECT_NAME> to <SYSTEM_ID>
 | `.claude/commands/fs-review.md` | `/fs-review` standalone command |
 | `.claude/commands/ts-spec.md` | `/ts-spec` standalone command |
 | `.claude/commands/dev.md` | `/dev` standalone command |
+| `.claude/commands/incident.md` | `/incident` standalone command (Stage 0 — pre-pipeline RCA) |
 | `.claude/agents/fs-review.md` | Stage 1 subagent definition (`fs-review-agent`) |
 | `.claude/agents/ts-spec.md` | Stage 2 subagent definition (`ts-agent`) |
 | `.claude/agents/dev.md` | Stage 3 subagent definition (`dev-agent`), also contains the full DH ABAP coding standards |
+| `.claude/agents/incident.md` | Stage 0 subagent definition (`incident-analyst-agent`) — read-only dump/trace analysis |
 
 ### SAP Access Policy (`config/access_policy.json`)
 
@@ -67,6 +77,7 @@ The **read (source) system** is not hardcoded — it is derived at runtime from 
 
 | Agent | Connection | Read System | Write System | Writes |
 |-------|-----------|-------------|--------------|--------|
+| `incident-analyst-agent` | ZLLM_READ | from `.mcp.json -s` | None | Prohibited |
 | `fs-review-agent` | ZLLM_READ | from `.mcp.json -s` | None | Prohibited |
 | `ts-agent` | ZLLM_READ | from `.mcp.json -s` | None | Prohibited |
 | `dev-agent` | ZLLM_READ / ZLLM_WRITE | from `.mcp.json -s` | Developer-selected at Stage 3 | Per-object approval required; DQ1 and DP1 are absolutely prohibited |
@@ -87,6 +98,23 @@ project/<ticket-id>/
 ```
 
 `CR-6000018866/` in the repo root is a completed example. `project/CR-12345/` is a minimal sample scaffold.
+
+### Incident Folder Convention
+
+Incident analysis (Stage 0, `/incident`) lives in a parallel root folder, separate from `project/` because incidents do not always lead to a code change:
+
+```
+incident/<incident-no>/
+├── input/                          ← optional fallback uploads (shortdump.txt, sqltrace.txt) — only when VSP cannot reach the system that produced the incident
+├── src/                            ← downloaded ABAP source for objects in the dump stack / trace top-N
+├── 01_summary.md                   ← reported issue + acquisition log (which dump_id / trace_id, which system, which filters)
+├── 02_dump_analysis.md             ← parsed short dump: exception, fault location, call stack, variable state (omitted if no dump)
+├── 03_trace_analysis.md            ← parsed SQL/runtime trace: hot statements, table accesses, time profile (omitted if no trace)
+├── 04_root_cause.md                ← consolidated RCA hypothesis with cited evidence
+└── 05_fix_recommendation.md        ← proposed fix — structured for handoff to `/fs-review` or `/ts-spec`
+```
+
+The agent pulls dumps and traces directly from the source system via VSP (`ListDumps`, `GetDump`, `ListSQLTraces`, `ListTraces`, `GetTrace`). At least one of `02_dump_analysis.md` / `03_trace_analysis.md` must be produced — otherwise there is no diagnostic evidence to analyze.
 
 ---
 

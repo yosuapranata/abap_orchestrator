@@ -8,8 +8,9 @@ AI-augmented ABAP development lifecycle using Claude Code agents and vibing-stea
 
 - Three Claude Code subagents handle FS Review, Technical Specification, and Development in sequence.
 - One orchestrator skill (`/abap-orchestrator`) coordinates them end-to-end for a given ticket.
+- A fourth read-only agent (`/incident`) handles pre-pipeline root-cause analysis from short dumps and SQL/runtime traces; its output feeds back into the dev pipeline.
 - Agents are read-only against DD1/DQ1. Writes to SAP require explicit developer approval at runtime.
-- All stage outputs land in `./project/<ticket-id>/` — agents communicate through the file system, not memory.
+- All stage outputs land in `./project/<ticket-id>/` — agents communicate through the file system, not memory. Incident analysis lives in a parallel `./incident/<incident-no>/` root.
 
 ---
 
@@ -25,30 +26,41 @@ abap_orchestrator/
 │   ├── agents/
 │   │   ├── fs-review.md               ← Stage 1: FS reviewer (read-only, claude-sonnet-4-6)
 │   │   ├── ts-spec.md                 ← Stage 2: technical spec producer (read-only, claude-sonnet-4-6)
-│   │   └── dev.md                     ← Stage 3: code writer with approval gate (claude-sonnet-4-6)
+│   │   ├── dev.md                     ← Stage 3: code writer with approval gate (claude-sonnet-4-6)
+│   │   └── incident.md                ← Stage 0: incident analyst — dump/trace RCA (read-only, claude-sonnet-4-6)
 │   ├── commands/
 │   │   ├── abap-orchestrator.md       ← /abap-orchestrator full pipeline command
 │   │   ├── fs-review.md               ← /fs-review run Stage 1 only
 │   │   ├── ts-spec.md                 ← /ts-spec run Stage 2 only
-│   │   └── dev.md                     ← /dev run Stage 3 only
+│   │   ├── dev.md                     ← /dev run Stage 3 only
+│   │   └── incident.md                ← /incident run Stage 0 (pre-pipeline RCA)
 │   ├── skills/
 │   │   └── abap-orchestrator.md       ← orchestrator logic (commands delegate here)
 │   └── settings.json                  ← Claude Code permission settings
 ├── config/
 │   ├── sap_connections.json           ← documentation only (not used at runtime)
 │   └── access_policy.json             ← which agent can access which system/operation
-└── project/                           ← runtime output: one subfolder per ticket
-    └── <ticket-id>/                   ← e.g. CR-12345 (see project/CR-12345/ for sample)
-        ├── input/
-        │   └── fs_original.md         ← developer drops FS here before running
-        ├── src/                       ← downloaded and modified ABAP source files
-        ├── 01_fs_questions.md         ← Stage 1 output
-        ├── 01_locked_objects.md       ← Stage 1 output
-        ├── 01_revised_fs.md           ← Stage 1 output
-        ├── 02_technical_spec.md       ← Stage 2 output
-        ├── 02_test_scenarios.md       ← Stage 2 output
-        ├── 03_change_log.md           ← Stage 3 output
-        └── 03_manual_changes.md       ← Stage 3 output (non-code changes)
+├── project/                           ← runtime output: one subfolder per ticket
+│   └── <ticket-id>/                   ← e.g. CR-12345 (see project/CR-12345/ for sample)
+│       ├── input/
+│       │   └── fs_original.md         ← developer drops FS here before running
+│       ├── src/                       ← downloaded and modified ABAP source files
+│       ├── 01_fs_questions.md         ← Stage 1 output
+│       ├── 01_locked_objects.md       ← Stage 1 output
+│       ├── 01_revised_fs.md           ← Stage 1 output
+│       ├── 02_technical_spec.md       ← Stage 2 output
+│       ├── 02_test_scenarios.md       ← Stage 2 output
+│       ├── 03_change_log.md           ← Stage 3 output
+│       └── 03_manual_changes.md       ← Stage 3 output (non-code changes)
+└── incident/                          ← runtime output: one subfolder per incident (parallel to project/)
+    └── <incident-no>/                 ← e.g. INC-2026-0421-001
+        ├── input/                     ← optional fallback uploads (only when VSP cannot reach the source system, e.g. DQ1/DP1 incidents)
+        ├── src/                       ← downloaded ABAP source for objects in the dump stack / trace top-N
+        ├── 01_summary.md              ← reported issue + acquisition log
+        ├── 02_dump_analysis.md        ← short dump parsing (omitted if no dump)
+        ├── 03_trace_analysis.md      ← SQL/runtime trace parsing (omitted if no trace)
+        ├── 04_root_cause.md           ← RCA hypothesis with cited evidence
+        └── 05_fix_recommendation.md   ← proposed fix — handoff to /fs-review or /ts-spec
 ```
 
 ---
@@ -144,6 +156,25 @@ This is useful for re-running a single stage after a REVISE without going throug
 
 ---
 
+### Option C — Incident analysis (Stage 0, pre-pipeline)
+
+When a short dump or slow query is reported, run a read-only RCA before deciding whether a code change is needed:
+
+```
+/incident <incident-no>
+```
+
+The agent:
+1. Pulls dumps and traces directly from the source system in `.mcp.json -s` via VSP (`ListDumps`, `GetDump`, `ListSQLTraces`, `ListTraces`, `GetTrace`).
+2. Downloads fresh source for every program/class in the dump stack into `incident/<incident-no>/src/`.
+3. Produces a 5-file analysis package ending in `05_fix_recommendation.md`, which is structured for handoff to `/fs-review` or `/ts-spec`.
+
+For incidents on systems VSP cannot reach (typically DQ1 or DP1), export the dump from ST22 and/or the trace from ST05/SAT manually and place the file(s) in `incident/<incident-no>/input/` before running `/incident`. The agent will use the uploaded files as primary source.
+
+The command does **not** auto-spawn the next stage — it suggests one (`/fs-review`, `/ts-spec`, `/dev`, or `no code change`) and lets you trigger it explicitly.
+
+---
+
 ## Available Commands
 
 All commands are invoked from the Claude Code chat prompt.
@@ -154,10 +185,12 @@ All commands are invoked from the Claude Code chat prompt.
 | `/fs-review` | `<ticket-id> <path-to-fs>` | Stage 1 only — review the FS against live SAP objects, produce questions and revised FS |
 | `/ts-spec` | `<ticket-id>` | Stage 2 only — produce Technical Specification and test scenarios from the revised FS |
 | `/dev` | `<ticket-id>` | Stage 3 only — implement ABAP changes locally and push to SAP after per-object approval |
+| `/incident` | `<incident-no>` | Stage 0 (pre-pipeline) — read-only RCA from short dumps and SQL/runtime traces; produces a fix recommendation that can feed `/fs-review` or `/ts-spec` |
 
 **Prerequisites between stages:**
 - `/ts-spec` requires `01_revised_fs.md` (output of `/fs-review`)
 - `/dev` requires `01_revised_fs.md` and `02_technical_spec.md` (outputs of Stages 1 and 2)
+- `/incident` has no prerequisites — it is the entry point when starting from a reported issue rather than a change request
 
 **Example — step-by-step for CR-12345:**
 
@@ -182,6 +215,7 @@ All agents run on `claude-sonnet-4-6`.
 
 | Agent | File | Stage | SAP Access |
 |-------|------|-------|------------|
+| incident-analyst-agent | `.claude/agents/incident.md` | 0 — Incident Analysis | Read-only (source system configured in `.mcp.json`) |
 | fs-review-agent | `.claude/agents/fs-review.md` | 1 — FS Review | Read-only (source system configured in `.mcp.json`) |
 | ts-agent | `.claude/agents/ts-spec.md` | 2 — Technical Spec | Read-only (source system configured in `.mcp.json`) |
 | dev-agent | `.claude/agents/dev.md` | 3 — Development | Read (source system in `.mcp.json`), Write (developer-selected at runtime; DQ1 and DP1 prohibited) |
@@ -205,6 +239,7 @@ Enforced via `config/access_policy.json` and hardcoded in each agent's system pr
 
 | Stage | Output Files |
 |-------|-------------|
+| 0 — Incident Analysis (pre-pipeline) | `01_summary.md`, `02_dump_analysis.md` *(if dump)*, `03_trace_analysis.md` *(if trace)*, `04_root_cause.md`, `05_fix_recommendation.md` (under `incident/<incident-no>/`) |
 | 1 — FS Review | `01_fs_questions.md`, `01_locked_objects.md`, `01_revised_fs.md` |
 | 2 — Technical Spec | `02_technical_spec.md`, `02_test_scenarios.md` |
 | 3 — Development | `03_change_log.md`, `03_manual_changes.md`, modified `src/*.abap` files |
