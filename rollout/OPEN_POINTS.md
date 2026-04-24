@@ -16,10 +16,12 @@
 |---|---|---|---|---|---|
 | [OP-06](#op-06--api-cost-per-ticket) | API Cost per Ticket | Finance | Financial | Resolved | Yosua |
 | [OP-08](#op-08--windows-wsl-setup-guide-not-yet-published) | Windows WSL Setup Guide | Documentation | High (blocker for WSL users) | Resolved | Berna & Efim |
-| [OP-09](#op-09--agent-must-use-solman-transport-request) | Agent Must Use SOLMAN Transport Request | Development | High — wrong TR used in every run | Open | Yosua |
-| [OP-10](#op-10--technical-specification-quality-improvement) | Technical Specification Quality Improvement | Development | High — TS quality gates Stage 3 | Open | Yosua |
+| [OP-09](#op-09--agent-must-use-solman-transport-request) | Agent Must Use SOLMAN Transport Request | Development | Medium | Open | Yosua |
+| [OP-10](#op-10--technical-specification-google-drive-formatting) | TS Google Drive Formatting | Development | High — raw Markdown unreadable in Google Docs | Open | Yosua |
 | [OP-11](#op-11--abap-coding-standards-enforcement-in-gemini-workflow) | ABAP Coding Standards in Gemini Workflow | Development | Medium | Open | TBD |
-| [OP-12](#op-12--fs-dev-planning-mcp--orchestrator-integration) | fs-dev-planning MCP + Orchestrator Integration | Architecture | High — unlocks Google Drive & Superpower | Open | Yosua / Efim |
+| [OP-12](#op-12--fs-dev-planning-mcp--orchestrator-integration) | fs-dev-planning MCP + Orchestrator Integration | Architecture | High — enables FS fetch + TS push via Google Drive | Open | Yosua / Efim |
+| [OP-13](#op-13--api-budget-constraints) | API Budget Constraints | Finance | Medium | Open | Robert |
+| [OP-14](#op-14--external-consultant-tooling-budget) | External Consultant Tooling Budget | Finance | Low | Open | TBD |
 
 **Status values:** `Open` · `In Progress` · `Decided` · `Resolved` · `Won't Fix`
 
@@ -94,7 +96,7 @@ WSL setup instructions were added to the existing [Windows setup guide](https://
 ## OP-09 — Agent Must Use SOLMAN Transport Request
 
 **Area:** Development
-**Impact:** High — agent auto-creates TRs instead of using the CHARM-generated TR on every run
+**Impact:** Medium
 **Status:** Open
 **Owner:** Yosua
 **Last updated:** 2026-04-24
@@ -124,32 +126,45 @@ Query table `E070` with:
 
 ---
 
-## OP-10 — Technical Specification Quality Improvement
+## OP-10 — Technical Specification Google Drive Formatting
 
 **Area:** Development
-**Impact:** High — TS quality directly gates Stage 3 code correctness
+**Impact:** High — TS written to Google Drive is unreadable (raw Markdown symbols visible in Google Docs)
 **Status:** Open
 **Owner:** Yosua
 **Last updated:** 2026-04-24
-**Source:** Workshop session 2026-04-22
+**Source:** Workshop session 2026-04-22; refined 2026-04-24
 
 ### Description
 
-Two issues observed with Technical Specification generation:
+This OP is the formatting sub-problem of [OP-12](#op-12--fs-dev-planning-mcp--orchestrator-integration).
 
-1. **Formatting** — the TS output from both the Gemini workflow and the orchestrator's `ts-agent` lacks consistent structure and readability.
-2. **Separation of concerns** — the current approach has the agent augment or work within the functional consultant's FS document. This risks the agent's technical content being diluted or constrained by the FC's draft format. An alternative is to have the agent generate an independent, fully agent-authored TS alongside the FC document.
+When the fs-dev-planning MCP writes the Technical Specification to a Google Drive document, it passes
+the content as a raw Markdown string. Google Docs renders this as plain text — `**bold**`, `## Heading`,
+and ` ```code blocks``` ` appear literally as typed symbols, making the document unreadable.
+
+The local `02_technical_spec.md` file (written to `project/<ticket>/`) should remain as Markdown — this
+is fine for local use. The formatting fix applies only to the Google Drive upload path.
+
+**Root cause:** No Markdown-to-Docs conversion step exists between `ts-agent` output and the
+fs-dev-planning MCP write call.
 
 ### Open Question
 
-Should the TS be agent-authored independently, or should it remain a structured augmentation of the FC's document? Decision needed before implementation.
+Should the TS be a fully agent-authored independent document (standalone TS), or an augmentation of the
+functional consultant's FS document? This affects the TS structure and template. Decision needed before
+the `ts-agent` prompt is refined.
 
 ### Actions Required
 
-- Define the target TS format/template that the `ts-agent` must produce.
-- Decide on separation vs. augmentation approach (requires team alignment).
-- Update the `ts-agent` system prompt and output schema accordingly.
-- Validate output quality on a real run (ticket 6000019754, target: after 1 May 2026).
+- Blocked on OP-12 (MCP must be available first to determine write tool capabilities).
+- Once MCP is available: determine whether the write tool accepts structured content (paragraph styles,
+  bold, lists) or plain text only. This dictates the conversion approach:
+  - Structured → convert Markdown AST to MCP's structured format in the orchestrator skill
+  - Plain text only → strip Markdown syntax to clean readable plain text before upload
+- Decide on standalone vs. augmented TS approach (team alignment required).
+- Define the TS Google Docs template/target format.
+- Validate on ticket 6000019754 after MCP integration is complete.
 
 ---
 
@@ -177,29 +192,88 @@ The ABAP Orchestrator's `dev-agent` already has the full DH ABAP coding standard
 ## OP-12 — fs-dev-planning MCP + Orchestrator Integration
 
 **Area:** Architecture
-**Impact:** High — unlocks Google Drive connectivity and Superpower plugin capabilities
+**Impact:** High — unlocks Google Drive read/write directly from the orchestrator pipeline
 **Status:** Open
 **Owner:** Yosua / Efim Parshin
+**Last updated:** 2026-04-24
+**Source:** Workshop session 2026-04-22; refined 2026-04-24
+
+### Description
+
+The fs-dev-planning MCP is an **npm package / executable** that exposes Google Drive read/write
+capabilities to Claude Code. Adding it to the orchestrator's `.mcp.json` alongside `vibing_steampunk`
+enables two new integration points in the pipeline:
+
+**Point 1 — FS Fetch (replaces manual file drop):**
+Currently: developer manually copies the FS document to `project/<ticket>/input/fs_original.md`.
+With integration: the orchestrator calls the MCP with the CR/ticket number → MCP fetches the FS
+directly from Google Drive → orchestrator saves it as `project/<ticket>/input/fs_original.md`.
+The `fs-review-agent` reads the local file as before — no agent changes required.
+
+**Point 2 — TS Push (new step after Stage 2):**
+After `ts-agent` writes `02_technical_spec.md` locally, the orchestrator calls the MCP to upload
+the TS as a new Google Doc. The CONTINUE/REVISE gate then includes the Google Drive document URL.
+The formatting issue (OP-10) must be resolved before this step produces a readable document.
+
+**Key design decision:** Google Drive integration is handled entirely by the **orchestrator skill**,
+not the agents. Agents remain SAP-only. Commands are unchanged or minimally adjusted.
+
+### Prerequisite
+
+The fs-dev-planning MCP npm package must be obtained from Efim Parshin and installed.
+
+### Actions Required
+
+- Yosua to schedule a call with Efim Parshin (target: after 1 May 2026 budget resolution).
+- Obtain and install the fs-dev-planning MCP npm package.
+- Add MCP server entry to `.mcp.json` alongside `vibing_steampunk`.
+- Enumerate exposed tools: confirm read tool (CR number → FS content) and write tool (CR number + content → Google Doc) signatures.
+- Implement FS fetch step in `.claude/skills/abap-orchestrator.md` (Step 0 pre-check).
+- Implement TS push step in `.claude/skills/abap-orchestrator.md` (after Stage 2 gate).
+- Apply OP-10 formatting fix in the TS push step.
+- Run integration test on ticket 6000019754 after MCP is configured.
+
+---
+
+## OP-13 — API Budget Constraints
+
+**Area:** Finance
+**Impact:** Medium
+**Status:** Open
+**Owner:** Robert
 **Last updated:** 2026-04-24
 **Source:** Workshop session 2026-04-22
 
 ### Description
 
-Two integration items were raised:
-
-1. **Merge fs-dev-planning MCP into the Orchestrator** — the fs-dev-planning MCP server provides Google Drive read/write and additional capabilities (Superpower plugin). Merging these into the orchestrator would allow agents to read FS documents directly from Google Drive and write outputs back, removing the manual file-drop step (`project/<ticket>/input/fs_original.md`).
-
-2. **Superpower plugin** — currently available in the Gemini workflow only. Should be incorporated into the Claude Code orchestrator setup.
-
-The exact integration approach for both items requires exploration with Efim Parshin.
+API budget constraints (covering Claude API costs and Gemini API quota) are currently being tracked under **GDP-14646**. The Gemini API quota limit observed during the simulation run is not yet fully characterised — the exact threshold is unknown. As adoption grows, API costs will scale proportionally with the number of CRs processed.
 
 ### Actions Required
 
-- Yosua to schedule a call with Efim Parshin to discuss integration approach (target: after 1 May 2026 budget resolution).
-- Investigate whether fs-dev-planning MCP can be added to `.mcp.json` alongside the existing `vibing-steampunk` server.
-- Evaluate Google Drive OAuth/service-account setup for the orchestrator environment.
-- Incorporate Superpower plugin into the Claude Code orchestrator configuration.
-- Run integration test on ticket 6000019754 once budget is resolved.
+- Monitor progress of GDP-14646 for budget resolution (target: 1 May 2026).
+- Once resolved, confirm API quota limits for both Claude and Gemini.
+- Define a cost-per-ticket budget threshold that triggers a model or workflow review.
+
+---
+
+## OP-14 — External Consultant Tooling Budget
+
+**Area:** Finance
+**Impact:** Low
+**Status:** Open
+**Owner:** TBD
+**Last updated:** 2026-04-24
+**Source:** Workshop session 2026-04-22
+
+### Description
+
+Whether external consultants working on DH projects can access and use the ABAP Orchestrator tooling has not been addressed. No budget allocation or licensing decision has been made for this group, and no owner has been assigned.
+
+### Actions Required
+
+- Determine if external consultants are in scope for this tooling.
+- If yes: identify budget owner and assess licensing/access requirements.
+- If no: document the decision and close this OP.
 
 ---
 
