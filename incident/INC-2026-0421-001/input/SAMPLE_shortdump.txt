@@ -1,0 +1,91 @@
+================================================================================
+SAMPLE SHORT DUMP — placeholder for the /incident workflow
+================================================================================
+
+This file is a SAMPLE only. It exists so the incident folder convention is
+visible in the repository. Delete it for real incidents and replace it with the
+actual ST22 export from the SAP system.
+
+------------------------------------------------------------
+WHEN TO UPLOAD A DUMP HERE INSTEAD OF LETTING THE AGENT PULL IT VIA VSP
+------------------------------------------------------------
+
+The default workflow is:
+
+    /incident <incident-no>
+
+The incident-analyst-agent will then call ListDumps + GetDump against the
+source system configured in `.mcp.json -s` and pull the dump directly.
+
+Upload a dump file to this folder ONLY when:
+  - The incident occurred on a system VSP cannot reach (typically DQ1 or DP1).
+  - The dump has been purged from ST22 (auto-deletion after retention window).
+  - You received the dump as a text export from a colleague or a ticketing tool.
+
+------------------------------------------------------------
+HOW TO EXPORT A DUMP FROM SAP
+------------------------------------------------------------
+
+  1. SE80 / SAPGUI → transaction ST22.
+  2. Locate the dump (filter by user / date / runtime error type).
+  3. Open the dump → menu Short dump → Save → Save in local file.
+  4. Save the .txt file into this folder, replacing this SAMPLE file.
+
+Suggested filename: `shortdump.txt` (the agent looks for any text file in input/
+and will catalog whatever it finds).
+
+------------------------------------------------------------
+EXAMPLE DUMP FORMAT (for reference — DO NOT use as real input)
+------------------------------------------------------------
+
+Runtime Errors         CONVT_NO_NUMBER
+Date and Time          2026-04-21 14:32:07
+
+Short text
+    Unable to interpret " " as a number.
+
+What happened?
+    The program tried to interpret the value " " as a number, but
+    since the value contravenes the rules for correct number formats,
+    this was not possible.
+
+Error analysis
+    An exception occurred which is explained in detail below.
+    The exception, which is assigned to class 'CX_SY_CONVERSION_NO_NUMBER',
+    was not caught and therefore caused a runtime error.
+
+How to correct the error
+    Probably the only way to eliminate the error is to correct the program.
+
+Information on where terminated
+    Termination occurred in the ABAP program "ZSD_BLOCKED_ORDERS" - in
+    "BUILD_OUTPUT_TABLE".
+    The main program was "ZSD_BLOCKED_ORDERS".
+
+    The termination occurred in line 142 of the source code of the (Include)
+    program "ZSD_BLOCKED_ORDERS"
+    of the source code of program "ZSD_BLOCKED_ORDERS" (when calling the
+    editor 1420).
+
+Source Code Extract
+   140  *   Convert net value (string from VBAP) to currency
+   141      LOOP AT lt_vbap INTO ls_vbap.
+>>>142        lv_netwr = ls_vbap-netwr_text.       " <-- CONVT_NO_NUMBER here
+   143        APPEND lv_netwr TO lt_amounts.
+   144      ENDLOOP.
+
+Active Calls/Events
+       1 FORM    BUILD_OUTPUT_TABLE        ZSD_BLOCKED_ORDERS  142
+       2 FORM    PROCESS_ORDERS            ZSD_BLOCKED_ORDERS   89
+       3 EVENT   START-OF-SELECTION        ZSD_BLOCKED_ORDERS   42
+
+User and Transaction
+    Client...........  100
+    User.............  REGFIN_USER01
+    Language Key.....  E
+    Transaction......  SE38
+    Program..........  ZSD_BLOCKED_ORDERS
+
+================================================================================
+END OF SAMPLE
+================================================================================

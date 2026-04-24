@@ -26,7 +26,8 @@
       "mcp__vibing_steampunk__SetTextElements",
       "mcp__vibing_steampunk__RunATCCheck",
       "mcp__vibing_steampunk__RunUnitTests",
-      "mcp__vibing_steampunk__GetContext"
+      "mcp__vibing_steampunk__GetContext",
+      "Bash(git -C \"h:/My Drive/AI_Initiative/abap_orchestrator\" status --short)"
     ]
   },
   "enabledMcpjsonServers": [
